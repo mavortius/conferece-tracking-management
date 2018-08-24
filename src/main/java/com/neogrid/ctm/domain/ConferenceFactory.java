@@ -18,9 +18,35 @@ public class ConferenceFactory {
     private static final String lightning = "lightning";
 
     public static Conference create(String fileName) {
-        List<Talk> talkList = new ArrayList<>();
         Conference conference = new Conference();
+        List<Talk> talkList = new ArrayList<>();
+        talkList = getTalksListFromFile(fileName, talkList);
+        long totalConferenceMin = talkList.stream().map(Talk::getDuration).reduce(0L, Long::sum);
+        int totalDays = getTotalDays(totalConferenceMin);
+        int trackCounter = 0;
 
+        do {
+            trackCounter++;
+            Track track = new Track(trackCounter);
+            conference.getTracks().add(track);
+            track.setMorningSession(createMorningSession(talkList));
+        } while (trackCounter < totalDays);
+
+        trackCounter = 0;
+
+        do {
+            trackCounter++;
+            int finalTrackCounter = trackCounter;
+            Track track = conference.getTracks().stream()
+                    .filter(t -> t.getNumber() == finalTrackCounter)
+                    .findFirst().get();
+            track.setAfternoonSession(createAfternoonSession(talkList));
+        } while (trackCounter < totalDays);
+
+        return conference;
+    }
+
+    private static List<Talk> getTalksListFromFile(String fileName, List<Talk> talkList) {
         try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
             talkList = stream.map(line -> {
                 Talk talk = new Talk(line);
@@ -40,37 +66,9 @@ public class ConferenceFactory {
             e.printStackTrace();
         }
 
-        talkList = talkList.stream()
+        return talkList.stream()
                 .sorted(Comparator.comparing(Talk::getDuration).reversed())
                 .collect(Collectors.toList());
-
-        long totalConferenceMin = talkList.stream().map(Talk::getDuration).reduce(0L, Long::sum);
-        int totalDays = getTotalDays(totalConferenceMin);
-        int trackCounter = 0;
-
-        do {
-            trackCounter++;
-            Track track = new Track(trackCounter);
-            conference.getTracks().add(track);
-            track.setMorningSession(createMorningSession(talkList));
-
-            /*if (talkList.stream().anyMatch(talk -> talk.getBeginTime() == null)) {
-                track.setAfternoonSession(createAfternoonSession(talkList));
-            }*/
-        } while (trackCounter < totalDays);
-
-        trackCounter = 0;
-
-        do {
-            trackCounter++;
-            int finalTrackCounter = trackCounter;
-            Track track = conference.getTracks().stream()
-                    .filter(t -> t.getNumber() == finalTrackCounter)
-                    .findFirst().get();
-            track.setAfternoonSession(createAfternoonSession(talkList));
-        } while (trackCounter < totalDays);
-
-        return conference;
     }
 
     private static int getTotalDays(long totalConferenceMin) {
