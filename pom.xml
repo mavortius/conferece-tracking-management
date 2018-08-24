@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.neogrid</groupId>
-  <artifactId>conferece-tracking-management</artifactId>
+  <artifactId>conference-tracking-management</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>conferece-tracking-management</name>
+  <name>conference-tracking-management</name>
   <url>http://www.neogrid.com</url>
 
   <properties>

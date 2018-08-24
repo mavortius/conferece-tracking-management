@@ -1,2 +1,2 @@
-# conferece-tracking-management
+# conference-tracking-management
 Conference Track Management System
